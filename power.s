@@ -12,7 +12,6 @@
 
 .global main
 main:
-	# prologue
 	enter $0, $0					# implicit prologue									
 
 	# welcome text
@@ -22,7 +21,7 @@ main:
 	# ask base
 	leaq base_txt(%rip), %rdi		# pass address of ask base question
 	call printf						# call printf
-	call flush						# calling flush forces to write buffer to the output terminal
+	call flush						# calling flush forces to display buffer
 
 	# capture base
 	leaq input_format(%rip), %rdi	# pass address of input format string (usually "%lu")
@@ -39,18 +38,19 @@ main:
 	leaq exp(%rip), %rsi			# pass address of exponent variable to capture
 	call scanf						# call scanf
 
-	call power
-	
-	leaq answer_txt(%rip), %rdi
-	mov base(%rip), %rsi
-	mov exp(%rip), %rdx
-	mov %rax, %rcx
-	call printf
+	call power						# do the calculations and store in %rax
+	call print_result				# after calculations, output the result
 
+	# epilogue
 	leave
-	ret# implicit epilogue
+	ret
 
-power:							# this init arguments for the power calculation
+# *****************************************************************************
+# * power calculations
+# * the power, power_loop, power_finished act like 1 subroutine, hence        *
+# * there being 1 enter, 1 leave and 1 ret (stack stays aligned).			  *
+# *****************************************************************************
+power:
 	enter $0, $0
 
 	movq $1, %rax					# set %rax (the answer of power) to 1
@@ -58,17 +58,31 @@ power:							# this init arguments for the power calculation
 	movq base(%rip), %rdi			# set first argument (of power) to base 
 
 power_loop:	
-	mulq %rdi						# multiply result with base (gets executed exp times)
-	loop power_loop
-
-power_finished:
-	leave
-	ret
+	mulq %rdi						# multiply result with base
+	loop power_loop					# short for:
+									#	dec %rcx
+									#	jnz power_loop
+power_exit:
+	leave							# clear the stack frame
+	ret								# return to where we left off in main
 
 flush:
 	enter $0, $0
 	xor %rdi, %rdi					# set %rdi to 0 (flush parameter)
 	call fflush						# call flush
-	leave							# restore base pointer etc.
+	leave							# restore base pointer and collapse frame
 	ret								# jump back to where flush was called from
+
+# prints the result
+print_result:
+	enter $0, $0					# epilogue
+
+	leaq answer_txt(%rip), %rdi		# answer as text argument to printf
+	mov base(%rip), %rsi			# pass base
+	mov exp(%rip), %rdx				# pass exponent
+	mov %rax, %rcx					# pass previously calculated result
+	call printf						# call printf
+
+	leave							# collapse stack frame
+	ret								# return to main
 
