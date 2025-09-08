@@ -1,0 +1,52 @@
+.data
+	welcome_txt:  .asciz "\nWelcome to powers in assembly!"  # blue text
+	num_txt:      .asciz "\tEnter base: "
+	answer_txt:   .asciz "\tAnswer: %ld^%ld = %ld"  # bold green text
+	input_format: .asciz "%lu"
+
+	num: .quad 0
+
+.text
+
+.global main
+main:
+	# prologue
+	enter $0, $0					# implicit prologue									
+
+	# welcome text
+	leaq welcome_txt(%rip), %rdi	# pass address of the welcome text	
+	call printf						# call printf
+
+	# ask number
+	leaq (%rip), %rdi		# pass address of ask base question
+	call printf						# call printf
+	call flush						# calling flush forces to write buffer to the output terminal
+
+	# capture base
+	leaq input_format(%rip), %rdi	# pass address of input format string (usually "%lu")
+	leaq num_txt(%rip), %rsi			# pass address of ask base to capture it
+	call scanf						# call scanf
+
+	leave							# implicit epilogue
+
+pow_init:							# this init arguments for the power calculation
+	# pow_loop needs:
+	# - %rcx for loop counter (starts equal to the exponent)
+	# - %rdi for base
+	#movq $1, %rax					# set %rax (the answer of power) to 1
+#	movq exp(%rip), %rcx			# set %rcx (loop counter) to 0
+#	movq base(%rip), %rdi			# set first argument (of power) to base
+
+
+pow_loop:							# this is the self-referential loop
+	mulq %rdi						# multiply result with base (gets executed exp times)
+	dec %rcx						# decrease the counter by 1
+	jnz pow_loop					# if zero flag (affected by dec) is NOT flagged, then repeat pow_loop
+
+flush:
+	enter $0, $0
+	xor %rdi, %rdi					# set %rdi to 0 (flush parameter)
+	call fflush						# call flush
+	leave							# restore base pointer etc.
+	ret								# jump back to where flush was called from
+
