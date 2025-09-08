@@ -39,37 +39,31 @@ main:
 	leaq exp(%rip), %rsi			# pass address of exponent variable to capture
 	call scanf						# call scanf
 
-	leave							# implicit epilogue
-
-pow_init:							# this init arguments for the power calculation
-	# pow_loop needs:
-	# - %rcx for loop counter (starts equal to the exponent)
-	# - %rdi for base
-	sub $8, %rsp
+	call power
+	
+	leaq answer_txt(%rip), %rdi
+	mov base(%rip), %rsi
+	mov exp(%rip), %rdx
+	mov %rax, %rcx
 	call printf
+
+	leave
+	ret# implicit epilogue
+
+power:							# this init arguments for the power calculation
+	enter $0, $0
+
 	movq $1, %rax					# set %rax (the answer of power) to 1
 	movq exp(%rip), %rcx			# set %rcx (loop counter) to 0
 	movq base(%rip), %rdi			# set first argument (of power) to base 
 
-pow_loop:							# this is the self-referential loop
+power_loop:	
 	mulq %rdi						# multiply result with base (gets executed exp times)
-	dec %rcx						# decrease the counter by 1
-	jnz pow_loop					# if zero flag (affected by dec) is NOT flagged, then repeat pow_loop
-	
-pow_finished:
-	enter $0, $0					# prologue
+	loop power_loop
 
-	leaq answer_txt(%rip), %rdi		# pass answer template to print
-	movq base(%rip), %rsi			# pass the inputted base
-	movq exp(%rip), %rdx			# pass the inputted exponent
-	movq %rax, %rcx					# pass the %rax (return value of power)
-	call printf						# call printf
-
-	leave							# epilogue
+power_finished:
+	leave
 	ret
-
-	xor %rdi, %rdi					# set exit param to 0
-	call exit						# exit
 
 flush:
 	enter $0, $0

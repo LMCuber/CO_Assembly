@@ -1,41 +1,12 @@
 .data
 	welcome_txt:  .asciz "\n\tWelcome to factorial in assembly!\n"  # blue text
-	num_txt:	  .asciz "\tEnter number to factorialize: "	
+	num_txt:	  .asciz "\tEnter number to factorialize: \n"	
+	asd_txt: .asciz "\tChanged to: %lu"
 	input_format: .asciz "%ld"
 
 	num: .quad 0
 
 .text
-
-.global main
-main:
-	# prologue
-	enter $0, $0					# implicit prologue									
-
-	# welcome text
-	leaq welcome_txt(%rip), %rdi	# pass address of the welcome text	
-	call printf						# call printf
-
-	# ask factorial
-	leaq num_txt(%rip), %rdi
-	call printf
-	call flush
-
-	# capture factorial
-	leaq input_format(%rip), %rdi
-	leaq num(%rip), %rsi
-	call scanf
-
-	leave
-
-factorial_init:
-	sub $8, %rsp
-	leaq welcome_txt(%rip), %rdi
-	call printf
-	call flush
-
-	xor %rdi, %rdi
-	call exit
 
 flush:
 	enter $0, $0
@@ -43,3 +14,27 @@ flush:
 	call fflush
 	leave
 	ret
+
+.globl main
+main:
+	# welcome text
+	enter $0, $0
+
+	mov $welcome_txt, %rdi
+	call printf
+	call flush
+
+	mov $num_txt, %rdi
+	call printf
+	call flush
+
+	mov $asd_txt, %rdi
+	mov %rax, %rsi
+	call printf
+	call flush
+
+	# finish
+	mov $0, %rdi
+	call exit
+
+	leave
