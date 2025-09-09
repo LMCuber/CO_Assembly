@@ -2,7 +2,6 @@
 	welcome_txt:  .asciz "\n\tWelcome to factorial in assembly!\n"  # blue text
 	num_txt:	  .asciz "\tEnter number to factorialize: "
 	input_format: .asciz "%ld"
-	answer_txt:   .asciz "\n\tAnswer: %ld! = %ld\n\n"
 
 	num: .quad 0
 
@@ -32,10 +31,9 @@ main:
 	leaq num(%rip), %rsi
 	call scanf
   
-	mov num(%rip), %rdi
+	#mov num(%rip), %rdi
+	mov $1, %rdi
 	call factorial
-
-	call print_result
 
 	# finish
 	mov $0, %rdi
@@ -47,31 +45,23 @@ main:
 factorial:
 	enter $0, $0
 
+factorial_recursive:
+	#leaq num_txt(%rip), %rdi
+	#call printf
+
 	cmp $1, %rdi
 	jle base_case
 
-	push %rdi
-	dec %rdi
-	call factorial
+	#mov %rdi, %rcx
+	#sub $1, %rdi
+	#call factorial_recursive
 
-	pop %rdi
-	mulq %rdi
-
-	leave
-	ret
+	#imul %rdi, %rax
 
 base_case:
 	mov $1, %rax
+
+factorial_exit:
 	leave
 	ret
 
-print_result:
-	enter $0, $0
-
-	leaq answer_txt(%rip), %rdi
-	mov num(%rip), %rsi
-	mov %rax, %rdx
-	call printf
-
-	leave
-	ret

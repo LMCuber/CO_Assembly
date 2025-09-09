@@ -38,6 +38,8 @@ main:
 	leaq exp(%rip), %rsi			# pass address of exponent variable to capture
 	call scanf						# call scanf
 
+	mov exp(%rip), %rcx				# set loop counter argument to exponent
+	mov base(%rip), %rdi			# set rdi argument to base
 	call power						# do the calculations and store in %rax
 	call print_result				# after calculations, output the result
 
@@ -52,13 +54,10 @@ main:
 # *****************************************************************************
 power:
 	enter $0, $0
-
 	movq $1, %rax					# set %rax (the answer of power) to 1
-	movq exp(%rip), %rcx			# set %rcx (loop counter) to 0
-	movq base(%rip), %rdi			# set first argument (of power) to base 
 
 power_loop:	
-	mulq %rdi						# multiply result with base
+	mul %rdi						# multiply result with base
 	loop power_loop					# short for:
 									#	dec %rcx
 									#	jnz power_loop
@@ -75,7 +74,7 @@ flush:
 
 # prints the result
 print_result:
-	enter $0, $0					# epilogue
+	enter $0, $0					# prologue
 
 	leaq answer_txt(%rip), %rdi		# answer as text argument to printf
 	mov base(%rip), %rsi			# pass base
