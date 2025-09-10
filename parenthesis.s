@@ -6,9 +6,11 @@
 .equ RBRACE, 125
 
 .data
-	input_str: .asciz "([])"
-	format_char: .asciz "\n%c\n"
-	format_int: .asciz "\n%ld\n"
+	input_str: .asciz "[[[]]]]]"
+	format_chr: .asciz "\nc | %c |\n"
+	format_int: .asciz "\ni[[ %ld ]]\n"
+	format_result: .asciz "\nResult: %ld\n"
+	format_twoint: .asciz "\n[%ld], [%ld]\n"
 
 .text
 
@@ -16,51 +18,115 @@
 main:
 	enter $0, $0
 
+	# print the input sequence
 	leaq input_str(%rip), %rdi
 	call printf
 
-	# get length of input sequence
 	leaq input_str(%rip), %rdi
-	call strlen
-
-	mov %rax, %r13		# length of string in r13
 	call parenthesis
+	call print_result
+
+	# post check
+	leaq format_int(%rip), %rdi
+	movq $999, %rsi
+	call printf
 
 	leave
 	ret
 
+# LOCAL REGISTERS FOR PARENTHESIS
+# %rdi (param): input string to validate
+# %rsi: length of input string
+# %rcx: loop counter
+# %al: current character of string (iteration variable)
+# %r8b: last opening parenthesis (fetched from top of stack)
+# %r9: number of opening parenthesi
+# %r10: number of closing parenthesi
+# %r12: return value (0: success, -1: error)
 parenthesis:
 	enter $0, $0
+	# get length
+	call strlen
+	movq %rax, %rsi
 
+	movq $0, %rcx
+	movq $0, %r8
+	movq $0, %r9
+	movq $0, %r10
+	movq $0, %r12
+
+# for loop
 parenthesis_loop:
-	testq %r13, %r13
-	jz loop_end
+	# print get current char
+	# leaq format_chr(%rip), %rdi
+	# movq (%r13, %r12, 1), %rsi	# calculate value of 
+	# call printf
+	
+	movb (%rcx, %rdi, 1), %al  # al is current char from loop (1 byte)
+	
+	# check if current character (al) is a closing character
+	cmpb $RBRACKET, %al  # compare current string with bracket
+	# if closing detected, check if closing violates top stack item
+	je check_correct_closing
 
-	#
-	mov input_str(%rip), %rdi
-	mov %r13, %rsi
-	call nth_string
 
-	# print it
-	movq format_char(%rip), %rdi
-	movzbq %al, %rsi
-	call printf
+	pushq (%rcx, %rdi, 1)
+	inc %r9
 
-	# n-th string is now stored in rax, so push it to the stack
-	pushq %rax
-	dec %r13
+continue:
+	incq %rcx
 
-skip_char:
-	incq %r12
-	decq %r13
-	jmp parenthesis_loop
+	# next loop iteration
+	cmp %rsi, %rcx		# if counter is less than max value, repeat
+	jl parenthesis_loop
+
+# do one last check
+		jmp check_ratio
+
+check_correct_closing:
+	# is closing, so get last pushed opening char, and compare if same
+	movb (%rsp), %r8b		# r8b is the last stack opener
+	cmpb $LBRACKET, %r8b
+	je pop_and_continue  # if the opener is lbracket, continue
+	
+	jmp error_and_end
+
+pop_and_continue:
+	add $8, %rsp
+	inc %r10
+	jmp continue
+
+error_and_end:
+	mov $-1, %r12
+	jmp loop_end
+
+check_ratio:
+	cmpq %r9, %r10
+	je loop_end
+	jmp error_and_end
 
 loop_end:
+	#leaq format_chr(%rip), %rdi
+	#mov 16(%rsp), %rsi
+	#call printf
+
+	
 	leave
 	ret
 
-nth_string:
-	add %rsi, %rdi
-	movb (%rdi), %al
+print_result:
+	enter $0, $0
+
+
+	leaq format_twoint(%rip), %rdi
+	mov %r9, %rsi
+	mov %r10, %rdx
+	call printf
+
+	leaq format_result(%rip), %rdi
+	mov %r12, %rsi
+	call printf
+
+	leave
 	ret
 

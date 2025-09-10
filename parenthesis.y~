@@ -1,0 +1,68 @@
+.equ LPAREN, 40
+.equ RPAREN, 41
+.equ LBRACKET, 91
+.equ RBRACKET, 93
+.equ LBRACE, 123
+.equ RBRACE, 125
+
+.data
+	input_str: .asciz "([])"
+	format_chr: .asciz "\nc | %c |\n"
+	format_int: .asciz "\ni[[ %ld ]]\n"
+
+.text
+
+.global main
+main:
+	enter $0, $0
+
+	# print the input sequence
+	leaq input_str(%rip), %rdi
+	call printf
+
+	# get length of input sequence
+	leaq input_str(%rip), %rdi
+	call strlen
+
+	# pass parameters to parenthesis subroutine
+	leaq input_str(%rip), %rdi  # pointer to input string
+	movq %rax, %rsi		# length of string (counter limit)
+	mov $0, %rcx
+	call parenthesis
+
+	# post check
+	leaq format_int(%rip), %rdi
+	movq $999, %rsi
+	call printf
+
+	leave
+	ret
+
+parenthesis:
+	enter $0, $0
+
+# for loop
+parenthesis_loop:
+	# print get current char
+	# leaq format_chr(%rip), %rdi
+	# movq (%r13, %r12, 1), %rsi	# calculate value of 
+	# call printf
+
+	pushq (%rcx, %rdi, 1)
+
+	incq %rcx
+
+	# next loop iteration
+	cmp %rsi, %rcx		# if counter is less than max value, repeat
+	jl parenthesis_loop
+
+loop_end:
+
+	leaq format_chr(%rip), %rdi
+	mov 8(%rsp), %rsi
+	call printf
+	
+
+	leave
+	ret
+
