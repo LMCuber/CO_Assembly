@@ -6,7 +6,7 @@
 .equ RBRACE, 125
 
 .data
-	input_str: .asciz "((()))"
+	input_str: .asciz "[[[]]]]]]]]"
 	format_chr: .asciz "\nc | %c |\n"
 	format_int: .asciz "\ni[[ %ld ]]\n"
 	format_result: .asciz "\nResult: %ld\n"
@@ -50,11 +50,9 @@ parenthesis:
 	movq %rax, %rsi
 
 	movq $0, %rcx
-	movb $0, %al
 	movq $0, %r8
 	movq $0, %r9
 	movq $0, %r10
-	movq $0, %r11
 	movq $0, %r12
 
 # for loop
@@ -67,12 +65,10 @@ parenthesis_loop:
 	movb (%rcx, %rdi, 1), %al  # al is current char from loop (1 byte)
 	
 	# check if current character (al) is a closing character
-	cmpb $RPAREN, %al  # compare current string with closing bracket s
-	je check_paren
-	cmpb $RBRACKET, %al
-	je check_bracket
-	cmpb $RBRACE, %al
-	je check_brace
+	cmpb $RBRACKET, %al  # compare current string with bracket s
+	# if closing detected, check if closing violates top stack item
+	je check_correct_closing
+
 
 	pushq (%rcx, %rdi, 1)
 	inc %r9
@@ -84,31 +80,8 @@ continue:
 	cmp %rsi, %rcx		# if counter is less than max value, repeat
 	jl parenthesis_loop
 
-	# do one last check
-	jmp check_ratio
-
-check_paren:
-	movb (%rsp), %r8b
-	cmpb $LPAREN, %r8b
-	je pop_and_continue
-	jmp error_and_end
-
-check_bracket:
-	mov (%rsp), %r8b
-	cmpb $LBRACKET, %r8b
-	je pop_and_continue
-	jmp error_and_end
-
-check_brace:
-	mov (%rsp), %r8b
-	cmpb $LBRACE, %r8b
-	je pop_and_continue
-	jmp error_and_end
-
-
-
-
-
+# do one last check
+		jmp check_ratio
 
 check_correct_closing:
 	# is closing, so get last pushed opening char, and compare if same

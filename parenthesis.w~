@@ -6,7 +6,7 @@
 .equ RBRACE, 125
 
 .data
-	input_str: .asciz "((()))"
+	input_str: .asciz "(((]]]"
 	format_chr: .asciz "\nc | %c |\n"
 	format_int: .asciz "\ni[[ %ld ]]\n"
 	format_result: .asciz "\nResult: %ld\n"
