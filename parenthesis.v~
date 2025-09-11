@@ -151,22 +151,22 @@ print_result:
 	enter $0, $0						# prologue
 
 	# if-else statement
-	cmp $0, %rax						# compare %rax with 0 (0 is success and -1 is fail)
-	je valid							# if success, jump to valid case
+	cmp $0, %rax
+	je valid
 
 	# invalid
-	leaq format_result_invalid(%rip), %rdi		# pass the invalid text as parameter
-	jmp both									# skip the valid case
+	leaq format_result_invalid(%rip), %rdi
+	jmp both
 
 	valid:
-		leaq format_result_valid(%rip), %rdi	# pass the valid text as parameter
+		leaq format_result_valid(%rip), %rdi
 	
 	both:
-		leaq input_str(%rip), %rsi		# pass input string as second parameter to printf
-		call printf						# call printf
+		leaq input_str(%rip), %rsi
+		call printf
 
-	leave								# epilogue
-	ret									# return to main
+	leave
+	ret
 
 # the simple flush function
 flush:
