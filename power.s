@@ -1,9 +1,10 @@
 .data
-	welcome_txt:  .asciz "\n\t\033[34mWelcome to powers in assembly!\n\033[0m"  # blue text
-	base_txt:     .asciz "\tEnter base: "
-	exp_txt:      .asciz "\tEnter exponent: "
-	input_format: .asciz "%ld"
-	answer_txt:   .asciz "\t\033[32m\033[1mAnswer: %ld^%ld = %ld\n\n\033[0m\033[0m"  # bold green text
+	metadata_txt:	.asciz "\n\tNames:\n\tLeo Bozkir (lbozkir)\n\tQuinn van Oirschot (qoirschot)"
+	welcome_txt:	.asciz "\n\n\t\033[34mWelcome to powers in assembly!\n\033[0m"  # blue text
+	base_txt:		.asciz "\tEnter base: "
+	exp_txt:		.asciz "\tEnter exponent: "
+	input_format:	.asciz "%ld"
+	answer_txt:		.asciz "\t\033[32m\033[1mAnswer: %ld^%ld = %ld\n\n\033[0m\033[0m"  # bold green text
 
 	base: .quad 0
 	exp:  .quad 0
@@ -13,6 +14,10 @@
 .global main
 main:
 	enter $0, $0					# implicit prologue									
+
+	# NetID text
+	leaq metadata_txt(%rip), %rdi	# pass address to printf as argument
+	call printf						# call printf
 
 	# welcome text
 	leaq welcome_txt(%rip), %rdi	# pass address of the welcome text	
@@ -38,14 +43,24 @@ main:
 	leaq exp(%rip), %rsi			# pass address of exponent variable to capture
 	call scanf						# call scanf
 
-	mov exp(%rip), %rcx				# set loop counter argument to exponent
-	mov base(%rip), %rdi			# set rdi argument to base
-	call power						# do the calculations and store in %rax
-	call print_result				# after calculations, output the result
+	# check whether exponent is zero, i.e. edge case
+	cmpq $0, exp(%rip)				# compare exponent with 0 to do branching
+	jne calc						# jump to default calculation if case isn't met (0)
+	mov $1, %rax					# if zero: set answer to 1
+	jmp post						# go to the post-calculation step
 
-	# epilogue
-	leave
-	ret
+	calc:
+		# if exponent != 0, do regular calculation
+		mov exp(%rip), %rcx				# set loop counter argument to exponent
+		mov base(%rip), %rdi			# set rdi argument to base
+		call power						# do the calculations and store in %rax
+	
+	post:
+		call print_result				# after calculations, output the result
+
+		# epilogue
+		leave
+		ret
 
 # *****************************************************************************
 # * power calculations
