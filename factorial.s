@@ -2,7 +2,7 @@
 	welcome_txt:  .asciz "\n\tWelcome to factorial in assembly!\n"  # blue text
 	num_txt:	  .asciz "\tEnter number to factorialize: "
 	input_format: .asciz "%ld"
-	answer_txt:   .asciz "\n\tAnswer: %ld! = %ld\n\n"
+	answer_txt:   .asciz "%ld\n"
 
 	num: .quad 0
 
@@ -69,8 +69,7 @@ print_result:
 	enter $0, $0
 
 	leaq answer_txt(%rip), %rdi
-	mov num(%rip), %rsi
-	mov %rax, %rdx
+	mov %rax, %rsi
 	call printf
 
 	leave
