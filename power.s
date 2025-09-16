@@ -4,7 +4,7 @@
 	base_txt:		.asciz "\tEnter base: "
 	exp_txt:		.asciz "\tEnter exponent: "
 	input_format:	.asciz "%ld"
-	answer_txt:		.asciz "\t\033[32m\033[1mAnswer: %ld^%ld = %ld\n\n\033[0m\033[0m"  # bold green text
+	answer_txt:		.asciz "%ld\n"
 
 	base: .quad 0
 	exp:  .quad 0
@@ -53,7 +53,7 @@ main:
 		# if exponent != 0, do regular calculation
 		mov exp(%rip), %rcx				# set loop counter argument to exponent
 		mov base(%rip), %rdi			# set rdi argument to base
-		call power						# do the calculations and store in %rax
+		call pow						# do the calculations and store in %rax
 	
 	post:
 		call print_result				# after calculations, output the result
@@ -67,7 +67,7 @@ main:
 # * the power, power_loop, power_finished act like 1 subroutine, hence        *
 # * there being 1 enter, 1 leave and 1 ret (stack stays aligned).			  *
 # *****************************************************************************
-power:
+pow:
 	enter $0, $0
 	movq $1, %rax					# set %rax (the answer of power) to 1
 
