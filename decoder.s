@@ -2,8 +2,10 @@
 	format_chr: .asciz "{{ %c }}\n"					# debug format for testing chars
 	format_int: .asciz "\t next addr: [[ %lu ]]\n"	# debug format for integers (unsigned)
 	format_chr_2: .asciz "{{ %c, %lu}}\n"			# debug format for 1 char 1 int
+
 	welcome_txt: .asciz "The decoded message is: "  # shows decoded string
 	format_decoded_chr: .asciz "%c"
+	
 	newline: .asciz "\n"
 
 .text
@@ -70,6 +72,8 @@ print_char_n:
 		mov $0, %rsi							# clear %rsi (second printf argument)
 		movb (%rdx, %rbx, 8), %sil				# put the character to print into lowest byte of %rsi argument
 
+		
+
 		call printf								# print the character that we found
 
 		dec %r12								# decrement the counter for number of times printing
@@ -87,4 +91,3 @@ flush:
 
 	leave										# epilogue
 	ret											# return back to where we came from 
-
